@@ -1,6 +1,5 @@
 resolver: lts-10.2
 packages:
 - .
-
-
-extra-deps: [io-string-like-0.1.0.0]
+extra-deps:
+- io-string-like-0.1.0.1

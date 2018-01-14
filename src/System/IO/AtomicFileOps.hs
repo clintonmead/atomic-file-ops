@@ -1,4 +1,5 @@
 {-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 {-|
 Often there's no clear way to preform atomic file system writes. The usual way
@@ -31,11 +32,10 @@ where
 
 import System.IO.StringLike.PutStr (CanPutStr, hPutStr)
 import System.IO.StringLike.GetContents (CanGetContents, hGetContents)
-import System.IO (openTempFile, hClose, Handle, withFile)
+import System.IO (openTempFile, hClose)
 import System.Directory (copyPermissions, renameFile)
 import System.FilePath (splitFileName)
 import Data.Semigroup ((<>))
-import System.IO.Error (catchIOError, ioError, isDoesNotExistError)
 import Data.Maybe (fromMaybe)
 import System.FileLock (withFileLock, SharedExclusive(Exclusive))
 {-|
