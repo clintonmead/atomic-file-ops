@@ -1,0 +1,24 @@
+name:                atomic-file-ops
+version:             0.1.0.0
+github:              "clintonmead/atomic-file-ops"
+license:             BSD3
+author:              "Clinton Mead"
+maintainer:          "clintonmead@gmail.com"
+copyright:           "Copyright: (c) 2017 Clinton Mead"
+
+synopsis: Functions to atomically write to files
+category: System
+
+description:
+  See module "System.IO.AtomicFileOps" for an overview and documentation.
+
+dependencies:
+- base >= 4.7 && < 5
+- io-string-like
+- filepath
+- directory
+- filelock
+
+library:
+  source-dirs: src
+  ghc-options: -Wall
