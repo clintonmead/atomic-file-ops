@@ -109,16 +109,14 @@ We've clobbered a write, and the behavour is inconsistent based on timing.
 
 This is where 'atomicModifyFile' comes in.
 
-'atomicModifyFile' gets passed a function, and will lock the file, to ensure
-two processes can not run on it at the same time.
+'atomicModifyFile' gets passed a function, and will lock a lock file,
+(passed as an argument) to ensure two processes can not run on it at the same time.
 
 If the two processes in the above case both used 'atomicModifyFile', then the
 result would be "3" in call cases.
 
-But it's worth mentioning that locking is advisory in many file systems. If you
-don't consistently use 'atomicModifyFile' with all your writers you may get the
-timing issues discussed previously. Indeed if you mix 'atomicReplaceFile' with
-'atomicModifyFile' you may still get timing issues.
+Make sure the lock file is different to the file you're modifying, or else
+you'll get permission denied errors on windows.
 
 One may ask, if you're going to lock the files, why bother with temp files at all?
 
@@ -144,16 +142,13 @@ but in the above case I've included an actual IO action: @duringAction@.
 
 The following sequences of events will occur:
 
-1. The file will be exclusively locked.
+1. Exclusively lock the lock file.
 2. The entire contents of the file will be read.
 3. The IO @duringAction@ will be executed, as @f@ is run against the contents of the file.
 4. If @whatToWrite@ is @Just contents@, @contents@ will be written to to a temp file and
    then moved over the target file.
    But if @whatToWrite@ is @Nothing@, do nothing.
-5. The file will be unlocked. In theory this is unnecessary as we're now only
-   locking the now dead file we just replaced. However that depends on whether
-   the filesystem locks based on filename or filehandle. Anyway lets we play it safe
-   and unlock, which we would need to do if we did nothing in part 4 anyway.
+5. Unlock the lock file.
 6. @afterAction@ will be executed as the IO return value of 'atomicModifyFile'.
 
 So this function has a lot of flexibility, however, in many simple use cases
@@ -167,10 +162,9 @@ Like 'atomicReplaceFile', 'atomicModifyFile' will fail if the file
 does not exist.
 -}
 atomicModifyFile :: (CanGetContents contents, CanPutStr contents)
-  => Maybe FilePath -> Maybe AtomicTempOptions -> FilePath -> (contents -> IO (IO a, Maybe contents)) -> IO a
-atomicModifyFile maybeLockFile maybeTempOptions fileToReplace contentsFunction =
+  => Maybe AtomicTempOptions -> FilePath -> FilePath -> (contents -> IO (IO a, Maybe contents)) -> IO a
+atomicModifyFile maybeTempOptions lockFile fileToReplace contentsFunction =
   withFileLock lockFile Exclusive actionDuringLock where
-    lockFile = fromMaybe (fileToReplace <> ".lock") maybeLockFile
     actionDuringLock _ = do
       contents <- hGetContents fileToReplace
       (result, maybeNewContents) <- contentsFunction contents
