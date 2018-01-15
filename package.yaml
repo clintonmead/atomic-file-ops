@@ -1,5 +1,5 @@
 name:                atomic-file-ops
-version:             0.1.0.1
+version:             0.2.0.0
 github:              "clintonmead/atomic-file-ops"
 license:             BSD3
 author:              "Clinton Mead"

@@ -167,9 +167,10 @@ Like 'atomicReplaceFile', 'atomicModifyFile' will fail if the file
 does not exist.
 -}
 atomicModifyFile :: (CanGetContents contents, CanPutStr contents)
-  => Maybe AtomicTempOptions -> FilePath -> (contents -> IO (IO a, Maybe contents)) -> IO a
-atomicModifyFile maybeTempOptions fileToReplace contentsFunction =
-  withFileLock fileToReplace Exclusive actionDuringLock where
+  => Maybe FilePath -> Maybe AtomicTempOptions -> FilePath -> (contents -> IO (IO a, Maybe contents)) -> IO a
+atomicModifyFile maybeLockFile maybeTempOptions fileToReplace contentsFunction =
+  withFileLock lockFile Exclusive actionDuringLock where
+    lockFile = fromMaybe (fileToReplace <> ".lock") maybeLockFile
     actionDuringLock _ = do
       contents <- hGetContents fileToReplace
       (result, maybeNewContents) <- contentsFunction contents
